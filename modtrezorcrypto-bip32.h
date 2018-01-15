@@ -178,7 +178,7 @@ STATIC mp_obj_t serialize_public_private(mp_obj_t self, bool use_public, uint32_
     if (written <= 0) {
         mp_raise_ValueError("Failed to serialize");
     }
-    return mp_obj_new_str(xpub, written - 1, false);  // written includes 0 at the end
+    return mp_obj_new_str(xpub, written - 1);  // written includes 0 at the end
 }
 
 /// def serialize_public(self, version: int) -> str:
@@ -286,10 +286,11 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_address(mp_obj_t self, mp_obj_t version)
     uint32_t v = mp_obj_get_int_truncated(version);
     char address[ADDRESS_MAXLEN];
     hdnode_get_address(&o->hdnode, v, address, ADDRESS_MAXLEN);
-    return mp_obj_new_str(address, strlen(address), false);
+    return mp_obj_new_str(address, strlen(address));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_trezorcrypto_HDNode_address_obj, mod_trezorcrypto_HDNode_address);
 
+#if USE_ETHEREUM
 /// def ethereum_pubkeyhash(self) -> bytes:
 ///     '''
 ///     Compute an Ethereum pubkeyhash (aka address) from the HD node.
@@ -302,6 +303,7 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_ethereum_pubkeyhash(mp_obj_t self) {
     return mp_obj_new_bytes(pkh, sizeof(pkh));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_ethereum_pubkeyhash_obj, mod_trezorcrypto_HDNode_ethereum_pubkeyhash);
+#endif
 
 STATIC const mp_rom_map_elem_t mod_trezorcrypto_HDNode_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_derive), MP_ROM_PTR(&mod_trezorcrypto_HDNode_derive_obj) },
@@ -317,7 +319,9 @@ STATIC const mp_rom_map_elem_t mod_trezorcrypto_HDNode_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_private_key), MP_ROM_PTR(&mod_trezorcrypto_HDNode_private_key_obj) },
     { MP_ROM_QSTR(MP_QSTR_public_key), MP_ROM_PTR(&mod_trezorcrypto_HDNode_public_key_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&mod_trezorcrypto_HDNode_address_obj) },
+#if USE_ETHEREUM
     { MP_ROM_QSTR(MP_QSTR_ethereum_pubkeyhash), MP_ROM_PTR(&mod_trezorcrypto_HDNode_ethereum_pubkeyhash_obj) },
+#endif
 };
 STATIC MP_DEFINE_CONST_DICT(mod_trezorcrypto_HDNode_locals_dict, mod_trezorcrypto_HDNode_locals_dict_table);
 
