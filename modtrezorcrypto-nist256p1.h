@@ -8,6 +8,7 @@
 #include "py/objstr.h"
 
 #include "ecdsa.h"
+#include "rand.h"
 #include "nist256p1.h"
 
 /// def generate_secret() -> bytes:
