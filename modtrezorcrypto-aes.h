@@ -51,9 +51,7 @@ STATIC mp_obj_t mod_trezorcrypto_AES_make_new(const mp_obj_type_t *type, size_t 
     }
     mp_buffer_info_t key;
     mp_get_buffer_raise(args[1], &key, MP_BUFFER_READ);
-    if (key.len != 16 && key.len != 24 && key.len != 32) {
-        mp_raise_ValueError("Invalid length of key (has to be 128, 192 or 256 bits)");
-    }
+
     if (n_args > 2) {
         mp_buffer_info_t iv;
         mp_get_buffer_raise(args[2], &iv, MP_BUFFER_READ);
@@ -64,8 +62,14 @@ STATIC mp_obj_t mod_trezorcrypto_AES_make_new(const mp_obj_type_t *type, size_t 
     } else {
         memset(o->iv, 0, AES_BLOCK_SIZE);
     }
+
     memset(o->ctr, 0, AES_BLOCK_SIZE);
+
     switch (key.len) {
+        default:
+            mp_raise_ValueError("Invalid/unsupported key length");
+            break;
+#ifdef AES_128
         case 16:
             if (o->mode == (ECB | Decrypt) || o->mode == (CBC | Decrypt)) {
                 aes_decrypt_key128(key.buf, &(o->ctx.decrypt_ctx));
@@ -73,6 +77,8 @@ STATIC mp_obj_t mod_trezorcrypto_AES_make_new(const mp_obj_type_t *type, size_t 
                 aes_encrypt_key128(key.buf, &(o->ctx.encrypt_ctx));
             }
             break;
+#endif
+#ifdef AES_192
         case 24:
             if (o->mode == (ECB | Decrypt) || o->mode == (CBC | Decrypt)) {
                 aes_decrypt_key192(key.buf, &(o->ctx.decrypt_ctx));
@@ -80,6 +86,8 @@ STATIC mp_obj_t mod_trezorcrypto_AES_make_new(const mp_obj_type_t *type, size_t 
                 aes_encrypt_key192(key.buf, &(o->ctx.encrypt_ctx));
             }
             break;
+#endif
+#ifdef AES_256
         case 32:
             if (o->mode == (ECB | Decrypt) || o->mode == (CBC |Decrypt)) {
                 aes_decrypt_key256(key.buf, &(o->ctx.decrypt_ctx));
@@ -87,6 +95,7 @@ STATIC mp_obj_t mod_trezorcrypto_AES_make_new(const mp_obj_type_t *type, size_t 
                 aes_encrypt_key256(key.buf, &(o->ctx.encrypt_ctx));
             }
             break;
+#endif
     }
     return MP_OBJ_FROM_PTR(o);
 }
