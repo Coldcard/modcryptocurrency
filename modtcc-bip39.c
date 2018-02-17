@@ -17,7 +17,7 @@ STATIC mp_obj_t mod_tcc_bip39_lookup(mp_obj_t idx_obj)
 {
     int idx = mp_obj_get_int(idx_obj);
 
-    // we've all read the BIP, so obviously 12 bits only here.
+    // we've all read the BIP, so obviously 11 bits only here.
     if(idx < 0 || idx > 0x7ff) {
         mp_raise_ValueError("wordlist range");
     }
