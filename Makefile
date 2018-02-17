@@ -1,5 +1,5 @@
 #
-# TODO: Make this useful... it should compile against microptyhon unix port
+# TODO: Make this useful... it should compile against microptyhon unix port or something
 #
 
 MPY_TOP ?= ../micropython
@@ -11,10 +11,14 @@ CFLAGS += -DMICROPY_PY_TREZORCRYPTO=1 -Itrezor-crypto
 # Include these files into your project.
 C_FILES = crc.c modtcc.c
 
-OBJ_FILES = $(C_FILES:%.c=%.o)
+# and this includes lots of other stuff
+# default target is here
+modtcc.o: modtcc-*.c
 
 all: $(OBJ_FILES)
-	@echo "syntax ok"
+	@echo syntax ok: $(OBJ_FILES)
+
+OBJ_FILES = $(C_FILES:%.c=%.o)
 
 TC_LIB = trezor-crypto/libtrezor-crypto.so
 

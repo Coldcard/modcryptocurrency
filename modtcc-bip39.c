@@ -9,6 +9,26 @@
 
 #include "bip39.h"
 
+/// def lookup(idx: int) -> str:
+///     '''
+///     Return the n-th word from the wordlist.
+///     '''
+STATIC mp_obj_t mod_tcc_bip39_lookup(mp_obj_t idx_obj)
+{
+    int idx = mp_obj_get_int(idx_obj);
+
+    // we've all read the BIP, so obviously 12 bits only here.
+    if(idx < 0 || idx > 0x7ff) {
+        mp_raise_ValueError("wordlist range");
+    }
+
+    const char * const *wordlist = mnemonic_wordlist();
+    const char *w = wordlist[idx];
+
+    return mp_obj_new_str(w, strlen(w));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_tcc_bip39_lookup_obj, mod_tcc_bip39_lookup);
+
 /// def find_word(prefix: str) -> Optional[str]:
 ///     '''
 ///     Return the first word from the wordlist starting with prefix.
@@ -121,6 +141,7 @@ STATIC const mp_rom_map_elem_t mod_trezorcrypto_bip39_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_data), MP_ROM_PTR(&mod_trezorcrypto_bip39_from_data_obj) },
     { MP_ROM_QSTR(MP_QSTR_check), MP_ROM_PTR(&mod_trezorcrypto_bip39_check_obj) },
     { MP_ROM_QSTR(MP_QSTR_seed), MP_ROM_PTR(&mod_trezorcrypto_bip39_seed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lookup), MP_ROM_PTR(&mod_tcc_bip39_lookup_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(mod_trezorcrypto_bip39_globals, mod_trezorcrypto_bip39_globals_table);
 
