@@ -8,16 +8,17 @@ MP_CONFIGFILE ?= $(MPY_TOP)/ports/unix/mpconfigport.h
 CFLAGS += -I$(MPY_TOP) -I$(MPY_TOP)/ports/unix/build -DMP_CONFIGFILE="\""$(MP_CONFIGFILE)"\""
 CFLAGS += -DMICROPY_PY_TREZORCRYPTO=1 -Itrezor-crypto
 
-C_FILES = crc.c modtrezorcrypto.c
+# Include these files into your project.
+C_FILES = crc.c modtcc.c
 
 OBJ_FILES = $(C_FILES:%.c=%.o)
 
-TARGET = example.o
-
-all: $(TARGET)
+all: $(OBJ_FILES)
+	@echo "syntax ok"
 
 TC_LIB = trezor-crypto/libtrezor-crypto.so
 
+TARGET = example.o
 $(TARGET): $(OBJ_FILES) $(TC_LIB) Makefile
 	$(CC) -o $(TARGET) $(OBJ_FILES) $(TC_LIB)
 
