@@ -53,6 +53,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_bip39_find_word_obj, mod_trezo
 ///     '''
 ///     Return possible 1-letter suffixes for given word prefix.
 ///     Result is a bitmask, with 'a' on the lowest bit, 'b' on the second lowest, etc.
+///     If the prefix is itself in the wordlist, bit 26 is set as well.
 ///     '''
 STATIC mp_obj_t mod_trezorcrypto_bip39_complete_word(mp_obj_t prefix)
 {
@@ -67,9 +68,13 @@ STATIC mp_obj_t mod_trezorcrypto_bip39_complete_word(mp_obj_t prefix)
     const char *const *wlist;
     for (wlist = mnemonic_wordlist(); *wlist != 0; wlist++) {
         word = *wlist;
-        if (strncmp(word, pfx.buf, pfx.len) == 0 && strlen(word) > pfx.len) {
-            bit = word[pfx.len] - 'a';
-            res |= 1 << bit;
+        if (strncmp(word, pfx.buf, pfx.len) == 0) {
+            if(strlen(word) == pfx.len) {
+                res |= 1 << 26;
+            } else if(strlen(word) > pfx.len) {
+                bit = word[pfx.len] - 'a';
+                res |= 1 << bit;
+            }
         }
     }
     return mp_obj_new_int(res);

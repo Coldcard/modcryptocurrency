@@ -20,3 +20,8 @@ This code originates from an Open Source Trezor project.
 GPL v3 like the original material.
 
 
+# Change Log
+
+- results from `bip39_complete_word()` could not distinguish that "act" is both
+  a prefix and actual word in the wordlist.
+
