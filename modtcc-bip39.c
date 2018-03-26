@@ -9,11 +9,11 @@
 
 #include "bip39.h"
 
-/// def lookup(idx: int) -> str:
+/// def lookup_nth(idx: int) -> str:
 ///     '''
 ///     Return the n-th word from the wordlist.
 ///     '''
-STATIC mp_obj_t mod_tcc_bip39_lookup(mp_obj_t idx_obj)
+STATIC mp_obj_t mod_tcc_bip39_lookup_nth(mp_obj_t idx_obj)
 {
     int idx = mp_obj_get_int(idx_obj);
 
@@ -27,7 +27,29 @@ STATIC mp_obj_t mod_tcc_bip39_lookup(mp_obj_t idx_obj)
 
     return mp_obj_new_str(w, strlen(w));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_tcc_bip39_lookup_obj, mod_tcc_bip39_lookup);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_tcc_bip39_lookup_nth_obj, mod_tcc_bip39_lookup_nth);
+
+/// def lookup_word(word: str) -> int:
+///     '''
+///     Return the 11-bit binary value for indicated word from bip39 wordlist.
+///     '''
+STATIC mp_obj_t mod_tcc_bip39_lookup_word(mp_obj_t word)
+{
+    mp_buffer_info_t want;
+    mp_get_buffer_raise(word, &want, MP_BUFFER_READ);
+
+    int i = 0;
+    for (const char * const *w = mnemonic_wordlist(); *w != 0; w++, i++) {
+        if (strncmp(*w, want.buf, want.len) == 0) {
+            return MP_OBJ_NEW_SMALL_INT(i);
+        }
+    }
+
+    mp_raise_ValueError("Unknown word");
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_tcc_bip39_lookup_word_obj, mod_tcc_bip39_lookup_word);
+
+
 
 /// def find_word(prefix: str) -> Optional[str]:
 ///     '''
@@ -48,6 +70,8 @@ STATIC mp_obj_t mod_trezorcrypto_bip39_find_word(mp_obj_t prefix)
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_bip39_find_word_obj, mod_trezorcrypto_bip39_find_word);
+
+
 
 /// def complete_word(prefix: str) -> int:
 ///     '''
@@ -146,7 +170,8 @@ STATIC const mp_rom_map_elem_t mod_trezorcrypto_bip39_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_data), MP_ROM_PTR(&mod_trezorcrypto_bip39_from_data_obj) },
     { MP_ROM_QSTR(MP_QSTR_check), MP_ROM_PTR(&mod_trezorcrypto_bip39_check_obj) },
     { MP_ROM_QSTR(MP_QSTR_seed), MP_ROM_PTR(&mod_trezorcrypto_bip39_seed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_lookup), MP_ROM_PTR(&mod_tcc_bip39_lookup_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lookup_nth), MP_ROM_PTR(&mod_tcc_bip39_lookup_nth_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lookup_word), MP_ROM_PTR(&mod_tcc_bip39_lookup_word_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(mod_trezorcrypto_bip39_globals, mod_trezorcrypto_bip39_globals_table);
 
