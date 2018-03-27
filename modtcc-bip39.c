@@ -40,7 +40,7 @@ STATIC mp_obj_t mod_tcc_bip39_lookup_word(mp_obj_t word)
 
     int i = 0;
     for (const char * const *w = mnemonic_wordlist(); *w != 0; w++, i++) {
-        if (strncmp(*w, want.buf, want.len) == 0) {
+        if ((strlen(*w) == want.len) && (strncmp(*w, want.buf, want.len) == 0)) {
             return MP_OBJ_NEW_SMALL_INT(i);
         }
     }
