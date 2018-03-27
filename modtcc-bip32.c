@@ -37,6 +37,8 @@ STATIC const mp_obj_type_t mod_trezorcrypto_HDNode_type;
 ///     '''
 STATIC mp_obj_t mod_trezorcrypto_HDNode_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
 
+    // XXX this is all wrong: mp_const_empty_bytes does not have NULL buf value!
+
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_depth,        MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_fingerprint,   MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
