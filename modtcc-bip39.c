@@ -105,6 +105,9 @@ STATIC mp_obj_t mod_trezorcrypto_bip39_complete_word(mp_obj_t prefix)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_bip39_complete_word_obj, mod_trezorcrypto_bip39_complete_word);
 
+#if 0
+// TODO: rework with non-static api; also maybe have caller pick random number
+
 /// def generate(strength: int) -> str:
 ///     '''
 ///     Generate a mnemonic of given strength (128, 160, 192, 224 and 256 bits).
@@ -118,6 +121,7 @@ STATIC mp_obj_t mod_trezorcrypto_bip39_generate(mp_obj_t strength) {
     return mp_obj_new_str(mnemo, strlen(mnemo));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_bip39_generate_obj, mod_trezorcrypto_bip39_generate);
+#endif
 
 /// def from_data(data: bytes) -> str:
 ///     '''
@@ -129,7 +133,8 @@ STATIC mp_obj_t mod_trezorcrypto_bip39_from_data(mp_obj_t data) {
     if (bin.len % 4 || bin.len < 16 || bin.len > 32) {
         mp_raise_ValueError("Invalid data length (only 16, 20, 24, 28 and 32 bytes are allowed)");
     }
-    const char *mnemo = mnemonic_from_data(bin.buf, bin.len);
+    char mnemo[240];
+    mnemonic_from_data_p(bin.buf, bin.len, mnemo);
     return mp_obj_new_str(mnemo, strlen(mnemo));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_bip39_from_data_obj, mod_trezorcrypto_bip39_from_data);
@@ -166,7 +171,7 @@ STATIC const mp_rom_map_elem_t mod_trezorcrypto_bip39_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bip39) },
     { MP_ROM_QSTR(MP_QSTR_find_word), MP_ROM_PTR(&mod_trezorcrypto_bip39_find_word_obj) },
     { MP_ROM_QSTR(MP_QSTR_complete_word), MP_ROM_PTR(&mod_trezorcrypto_bip39_complete_word_obj) },
-    { MP_ROM_QSTR(MP_QSTR_generate), MP_ROM_PTR(&mod_trezorcrypto_bip39_generate_obj) },
+    //TODO//{ MP_ROM_QSTR(MP_QSTR_generate), MP_ROM_PTR(&mod_trezorcrypto_bip39_generate_obj) },
     { MP_ROM_QSTR(MP_QSTR_from_data), MP_ROM_PTR(&mod_trezorcrypto_bip39_from_data_obj) },
     { MP_ROM_QSTR(MP_QSTR_check), MP_ROM_PTR(&mod_trezorcrypto_bip39_check_obj) },
     { MP_ROM_QSTR(MP_QSTR_seed), MP_ROM_PTR(&mod_trezorcrypto_bip39_seed_obj) },
