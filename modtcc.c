@@ -17,12 +17,6 @@
 #include "modtcc-crc.c"
 #include "modtcc-bip32.c"
 #include "modtcc-bip39.c"
-#include "modtcc-blake256.c"
-#include "modtcc-blake2b.c"
-#include "modtcc-blake2s.c"
-#include "modtcc-chacha20poly1305.c"
-#include "modtcc-curve25519.c"
-#include "modtcc-ed25519.c"
 #include "modtcc-nist256p1.c"
 #include "modtcc-pbkdf2.c"
 #include "modtcc-random.c"
@@ -32,6 +26,15 @@
 #include "modtcc-sha1.c"
 #include "modtcc-sha256.c"
 #include "modtcc-sha512.c"
+
+#if 0
+#include "modtcc-blake256.c"
+#include "modtcc-blake2b.c"
+#include "modtcc-blake2s.c"
+#include "modtcc-chacha20poly1305.c"
+#include "modtcc-curve25519.c"
+#include "modtcc-ed25519.c"
+#endif
 #if USE_KECCAK
 #include "modtcc-sha3-256.c"
 #include "modtcc-sha3-512.c"
@@ -43,12 +46,6 @@ STATIC const mp_rom_map_elem_t mp_module_tcc_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_crc), MP_ROM_PTR(&mod_trezorcrypto_crc_module) },
     { MP_ROM_QSTR(MP_QSTR_bip32), MP_ROM_PTR(&mod_trezorcrypto_bip32_module) },
     { MP_ROM_QSTR(MP_QSTR_bip39), MP_ROM_PTR(&mod_trezorcrypto_bip39_module) },
-    { MP_ROM_QSTR(MP_QSTR_blake256), MP_ROM_PTR(&mod_trezorcrypto_Blake256_type) },
-    { MP_ROM_QSTR(MP_QSTR_blake2b), MP_ROM_PTR(&mod_trezorcrypto_Blake2b_type) },
-    { MP_ROM_QSTR(MP_QSTR_blake2s), MP_ROM_PTR(&mod_trezorcrypto_Blake2s_type) },
-    { MP_ROM_QSTR(MP_QSTR_chacha20poly1305), MP_ROM_PTR(&mod_trezorcrypto_ChaCha20Poly1305_type) },
-    { MP_ROM_QSTR(MP_QSTR_curve25519), MP_ROM_PTR(&mod_trezorcrypto_curve25519_module) },
-    { MP_ROM_QSTR(MP_QSTR_ed25519), MP_ROM_PTR(&mod_trezorcrypto_ed25519_module) },
     { MP_ROM_QSTR(MP_QSTR_nist256p1), MP_ROM_PTR(&mod_trezorcrypto_nist256p1_module) },
     { MP_ROM_QSTR(MP_QSTR_pbkdf2), MP_ROM_PTR(&mod_trezorcrypto_Pbkdf2_type) },
     { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&mod_trezorcrypto_random_module) },
@@ -58,6 +55,14 @@ STATIC const mp_rom_map_elem_t mp_module_tcc_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&mod_trezorcrypto_Sha1_type) },
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&mod_trezorcrypto_Sha256_type) },
     { MP_ROM_QSTR(MP_QSTR_sha512), MP_ROM_PTR(&mod_trezorcrypto_Sha512_type) },
+#if 0
+    { MP_ROM_QSTR(MP_QSTR_blake256), MP_ROM_PTR(&mod_trezorcrypto_Blake256_type) },
+    { MP_ROM_QSTR(MP_QSTR_blake2b), MP_ROM_PTR(&mod_trezorcrypto_Blake2b_type) },
+    { MP_ROM_QSTR(MP_QSTR_blake2s), MP_ROM_PTR(&mod_trezorcrypto_Blake2s_type) },
+    { MP_ROM_QSTR(MP_QSTR_chacha20poly1305), MP_ROM_PTR(&mod_trezorcrypto_ChaCha20Poly1305_type) },
+    { MP_ROM_QSTR(MP_QSTR_curve25519), MP_ROM_PTR(&mod_trezorcrypto_curve25519_module) },
+    { MP_ROM_QSTR(MP_QSTR_ed25519), MP_ROM_PTR(&mod_trezorcrypto_ed25519_module) },
+#endif
 #if USE_KECCAK
     { MP_ROM_QSTR(MP_QSTR_sha3_256), MP_ROM_PTR(&mod_trezorcrypto_Sha3_256_type) },
     { MP_ROM_QSTR(MP_QSTR_sha3_512), MP_ROM_PTR(&mod_trezorcrypto_Sha3_512_type) },
