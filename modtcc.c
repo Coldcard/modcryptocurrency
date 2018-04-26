@@ -27,7 +27,7 @@
 #include "modtcc-sha256.c"
 #include "modtcc-sha512.c"
 
-#if 0
+#if 1
 #include "modtcc-blake256.c"
 #include "modtcc-blake2b.c"
 #include "modtcc-blake2s.c"
@@ -55,7 +55,7 @@ STATIC const mp_rom_map_elem_t mp_module_tcc_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&mod_trezorcrypto_Sha1_type) },
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&mod_trezorcrypto_Sha256_type) },
     { MP_ROM_QSTR(MP_QSTR_sha512), MP_ROM_PTR(&mod_trezorcrypto_Sha512_type) },
-#if 0
+#if 1
     { MP_ROM_QSTR(MP_QSTR_blake256), MP_ROM_PTR(&mod_trezorcrypto_Blake256_type) },
     { MP_ROM_QSTR(MP_QSTR_blake2b), MP_ROM_PTR(&mod_trezorcrypto_Blake2b_type) },
     { MP_ROM_QSTR(MP_QSTR_blake2s), MP_ROM_PTR(&mod_trezorcrypto_Blake2s_type) },
