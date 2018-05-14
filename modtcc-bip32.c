@@ -217,6 +217,21 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_clone(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_clone_obj, mod_trezorcrypto_HDNode_clone);
 
+/// def blank(self) -> HDNode:
+///     '''
+///     Blank out sensitive values in self. Object useless afterwards.
+///     '''
+STATIC mp_obj_t modtcc_HDNode_blank(mp_obj_t self) {
+    mp_obj_HDNode_t *o = MP_OBJ_TO_PTR(self);
+
+    memset(&o->hdnode, 0, sizeof(HDNode));
+    o->fingerprint = 0;
+
+    return mp_const_none;
+
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(modtcc_HDNode_blank_obj, modtcc_HDNode_blank);
+
 /// def depth(self) -> int:
 ///     '''
 ///     Returns a depth of the HD node.
@@ -321,6 +336,7 @@ STATIC const mp_rom_map_elem_t mod_trezorcrypto_HDNode_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_private_key), MP_ROM_PTR(&mod_trezorcrypto_HDNode_private_key_obj) },
     { MP_ROM_QSTR(MP_QSTR_public_key), MP_ROM_PTR(&mod_trezorcrypto_HDNode_public_key_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&mod_trezorcrypto_HDNode_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blank), MP_ROM_PTR(&modtcc_HDNode_blank_obj) },
 #if USE_ETHEREUM
     { MP_ROM_QSTR(MP_QSTR_ethereum_pubkeyhash), MP_ROM_PTR(&mod_trezorcrypto_HDNode_ethereum_pubkeyhash_obj) },
 #endif
