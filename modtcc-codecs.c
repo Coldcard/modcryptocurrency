@@ -115,6 +115,12 @@ STATIC mp_obj_t modtcc_b32_decode(mp_obj_t enc)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(modtcc_b32_decode_obj, modtcc_b32_decode);
 
+//
+// 
+// Bech32 aka. Segwit addresses, but hopefylly not specific to segwit addresses only.
+//
+//
+
 // pack and unpack bits; probably 5 or 8...
 //
     STATIC inline int
@@ -145,9 +151,6 @@ sw_convert_bits(
     return 1;
 }
 
-// 
-// Bech32 aka. Segwit addresses, but hopefylly not specific to segwit addresses only
-//
 STATIC mp_obj_t modtcc_bech32_encode(mp_obj_t hrp_obj, mp_obj_t segwit_version_obj, mp_obj_t data_obj)
 {
     const char *hrp = mp_obj_str_get_str(hrp_obj);
@@ -227,15 +230,21 @@ int bech32_decode(
 );
  */
 
-    char  hrp[strlen(s) - 6];
-    uint8_t tmp[strlen(s) - 8];         // actually 8-bit
+    char  hrp[strlen(s) + 16];
+    uint8_t tmp[strlen(s) + 16];         // actually 8-bit
     size_t  tmp_len = 0;
 
     int rv = bech32_decode(hrp, tmp, &tmp_len, s);
 
     if(rv != 1) {
-        // transcription error from user is very likely
+        // probably transcription error from user
         mp_raise_ValueError("corrupt bech32");
+    }
+
+    if(tmp_len <= 1) {
+        // lots of valid Bech32 strings, but invalid for segwit puposes
+        // can end up here; but don't care.
+        mp_raise_ValueError("no sw verion and/or data");
     }
 
     // re-pack 5-bit data into 8-bit bytes (after version)
