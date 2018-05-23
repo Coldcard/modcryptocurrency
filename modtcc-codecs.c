@@ -11,9 +11,10 @@
 
 #include "py/objstr.h"
 
+#include "hasher.h"
 #include "base58.h"
 #include "base32.h"
-#include "hasher.h"
+#include "segwit_addr.h"
 
 /*
 int base58_encode_check(const uint8_t *data, int len, HasherType hasher_type, char *str, int strsize);
@@ -48,7 +49,7 @@ STATIC mp_obj_t modtcc_b58_encode(mp_obj_t data)
 
     vstr.len = rl-1;        // strip NUL
     
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(modtcc_b58_encode_obj, modtcc_b58_encode);
 
@@ -93,7 +94,7 @@ STATIC mp_obj_t modtcc_b32_encode(mp_obj_t data)
 
     vstr.len = last - vstr.buf;        // strips NUL
     
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(modtcc_b32_encode_obj, modtcc_b32_encode);
 
@@ -114,6 +115,149 @@ STATIC mp_obj_t modtcc_b32_decode(mp_obj_t enc)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(modtcc_b32_decode_obj, modtcc_b32_decode);
 
+// pack and unpack bits; probably 5 or 8...
+//
+    STATIC inline int
+sw_convert_bits(
+    uint8_t* out, size_t* outlen,
+    const int outbits,
+    const uint8_t* in, size_t inlen,
+    const int inbits, bool pad
+) {
+    uint32_t val = 0;
+    int bits = 0;
+    uint32_t maxv = (((uint32_t)1) << outbits) - 1;
+    while (inlen--) {
+        val = (val << inbits) | *(in++);
+        bits += inbits;
+        while (bits >= outbits) {
+            bits -= outbits;
+            out[(*outlen)++] = (val >> bits) & maxv;
+        }
+    }
+    if (pad) {
+        if (bits) {
+            out[(*outlen)++] = (val << (outbits - bits)) & maxv;
+        }
+    } else if (((val << (outbits - bits)) & maxv) || bits >= inbits) {
+        return 0;
+    }
+    return 1;
+}
+
+// 
+// Bech32 aka. Segwit addresses, but hopefylly not specific to segwit addresses only
+//
+STATIC mp_obj_t modtcc_bech32_encode(mp_obj_t hrp_obj, mp_obj_t segwit_version_obj, mp_obj_t data_obj)
+{
+    const char *hrp = mp_obj_str_get_str(hrp_obj);
+    uint32_t segwit_version = mp_obj_int_get_checked(segwit_version_obj);
+
+    mp_buffer_info_t buf;
+    mp_get_buffer_raise(data_obj, &buf, MP_BUFFER_READ);
+
+    // low-level bech32 functions want 5-bit data unpacked into bytes. first value is
+    // the version number (5 bits), and remainder is packed data.
+
+    if(segwit_version > 16) {
+        mp_raise_ValueError("sw version");
+    }
+
+    uint8_t data[buf.len + 1];
+    size_t  data_len = 0;
+    data[0] = segwit_version;
+    int cv_ok = sw_convert_bits(data + 1, &data_len, 5, buf.buf, buf.len, 8, true);
+
+    if(cv_ok != 1) {
+        mp_raise_ValueError("pack fail");
+    }
+
+    // we already prefixed the version number
+    data_len += 1;
+
+    vstr_t vstr;
+    vstr_init_len(&vstr, strlen(hrp) + data_len + 8);
+
+    /** Encode a Bech32 string
+     *
+     *  Out: output:  Pointer to a buffer of size strlen(hrp) + data_len + 8 that
+     *                will be updated to contain the null-terminated Bech32 string.
+     *  In: hrp :     Pointer to the null-terminated human readable part.
+     *      data :    Pointer to an array of 5-bit values.
+     *      data_len: Length of the data array.
+     *  Returns 1 if successful.
+
+        int bech32_encode(
+            char *output,
+            const char *hrp,
+            const uint8_t *data,
+            size_t data_len);
+     */
+    int rv = bech32_encode(vstr.buf, hrp, data, data_len);
+
+    if(rv != 1) {
+        mp_raise_ValueError("encode fail");
+    }
+
+    vstr.len = strlen(vstr.buf);
+    
+    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(modtcc_bech32_encode_obj, modtcc_bech32_encode);
+
+STATIC mp_obj_t modtcc_bech32_decode(mp_obj_t enc)
+{
+    const char *s = mp_obj_str_get_str(enc);
+
+/** Decode a Bech32 string
+ *
+ *  Out: hrp:      Pointer to a buffer of size strlen(input) - 6. Will be
+ *                 updated to contain the null-terminated human readable part.
+ *       data:     Pointer to a buffer of size strlen(input) - 8 that will
+ *                 hold the encoded 5-bit data values.
+ *       data_len: Pointer to a size_t that will be updated to be the number
+ *                 of entries in data.
+ *  In: input:     Pointer to a null-terminated Bech32 string.
+ *  Returns 1 if succesful.
+int bech32_decode(
+    char *hrp,
+    uint8_t *data,
+    size_t *data_len,
+    const char *input
+);
+ */
+
+    char  hrp[strlen(s) - 6];
+    uint8_t tmp[strlen(s) - 8];         // actually 8-bit
+    size_t  tmp_len = 0;
+
+    int rv = bech32_decode(hrp, tmp, &tmp_len, s);
+
+    if(rv != 1) {
+        // transcription error from user is very likely
+        mp_raise_ValueError("corrupt bech32");
+    }
+
+    // re-pack 5-bit data into 8-bit bytes (after version)
+    uint8_t packed[tmp_len];
+    size_t packed_len = 0;
+
+    int cv_ok = sw_convert_bits(packed, &packed_len, 8, tmp + 1, tmp_len - 1, 5, false);
+
+    if(cv_ok != 1) {
+        mp_raise_ValueError("repack fail");
+    }
+
+    // return a tuple: (hrp, version, data)
+    mp_obj_t tuple[3] = {
+        mp_obj_new_str(hrp, strlen(hrp)),
+        MP_OBJ_NEW_SMALL_INT(tmp[0]),
+        mp_obj_new_bytes(packed, packed_len),
+    };
+
+    return mp_obj_new_tuple(3, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(modtcc_bech32_decode_obj, modtcc_bech32_decode);
 
 STATIC const mp_rom_map_elem_t modtcc_codecs_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_codecs) },
@@ -121,6 +265,8 @@ STATIC const mp_rom_map_elem_t modtcc_codecs_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_b58_decode), MP_ROM_PTR(&modtcc_b58_decode_obj) },
     { MP_ROM_QSTR(MP_QSTR_b32_encode), MP_ROM_PTR(&modtcc_b32_encode_obj) },
     { MP_ROM_QSTR(MP_QSTR_b32_decode), MP_ROM_PTR(&modtcc_b32_decode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bech32_encode), MP_ROM_PTR(&modtcc_bech32_encode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bech32_decode), MP_ROM_PTR(&modtcc_bech32_decode_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(modtcc_codecs_globals, modtcc_codecs_globals_table);
 
