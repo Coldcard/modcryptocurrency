@@ -63,7 +63,8 @@ STATIC mp_obj_t mod_trezorcrypto_AES_make_new(const mp_obj_type_t *type, size_t 
         memset(o->iv, 0, AES_BLOCK_SIZE);
     }
 
-    memset(o->ctr, 0, AES_BLOCK_SIZE);
+    // for CTR modes, use IV
+    memcpy(o->ctr, o->iv, AES_BLOCK_SIZE);
 
     switch (key.len) {
         default:
