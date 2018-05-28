@@ -252,6 +252,17 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_fingerprint(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_fingerprint_obj, mod_trezorcrypto_HDNode_fingerprint);
 
+/// def my_fingerprint(self) -> int:
+///     '''
+///     Returns a fingerprint of this HD node (hash of its public key)... not the parent.
+///     '''
+STATIC mp_obj_t mod_trezorcrypto_HDNode_my_fingerprint(mp_obj_t self) {
+    mp_obj_HDNode_t *o = MP_OBJ_TO_PTR(self);
+    uint32_t fp = hdnode_fingerprint(&o->hdnode);
+    return mp_obj_new_int_from_uint(fp);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_my_fingerprint_obj, mod_trezorcrypto_HDNode_my_fingerprint);
+
 /// def child_num(self) -> int:
 ///     '''
 ///     Returns a child index of the HD node.
@@ -344,6 +355,7 @@ STATIC const mp_rom_map_elem_t mod_trezorcrypto_HDNode_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_clone), MP_ROM_PTR(&mod_trezorcrypto_HDNode_clone_obj) },
     { MP_ROM_QSTR(MP_QSTR_depth), MP_ROM_PTR(&mod_trezorcrypto_HDNode_depth_obj) },
     { MP_ROM_QSTR(MP_QSTR_fingerprint), MP_ROM_PTR(&mod_trezorcrypto_HDNode_fingerprint_obj) },
+    { MP_ROM_QSTR(MP_QSTR_my_fingerprint), MP_ROM_PTR(&mod_trezorcrypto_HDNode_my_fingerprint_obj) },
     { MP_ROM_QSTR(MP_QSTR_child_num), MP_ROM_PTR(&mod_trezorcrypto_HDNode_child_num_obj) },
     { MP_ROM_QSTR(MP_QSTR_chain_code), MP_ROM_PTR(&mod_trezorcrypto_HDNode_chain_code_obj) },
     { MP_ROM_QSTR(MP_QSTR_private_key), MP_ROM_PTR(&mod_trezorcrypto_HDNode_private_key_obj) },
