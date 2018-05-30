@@ -37,7 +37,7 @@ STATIC const mp_obj_type_t mod_trezorcrypto_HDNode_type;
 ///     '''
 STATIC mp_obj_t mod_trezorcrypto_HDNode_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
 
-    // XXX this is all wrong: mp_const_empty_bytes does not have NULL buf value!
+    // NOTE: mp_const_empty_bytes does not have NULL buf value! Look at the .len
 
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_depth,        MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -63,21 +63,21 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_make_new(const mp_obj_type_t *type, size
     mp_get_buffer_raise(vals[5].u_obj, &public_key, MP_BUFFER_READ);
     mp_get_buffer_raise(vals[6].u_obj, &curve_name, MP_BUFFER_READ);
 
-    if (NULL == chain_code.buf || 32 != chain_code.len) {
+    if (chain_code.len && 32 != chain_code.len) {
         mp_raise_ValueError("chain_code is invalid");
     }
-    if (NULL == public_key.buf && NULL == private_key.buf) {
+    if (!public_key.len && !private_key.len) {
         mp_raise_ValueError("either public_key or private_key is required");
     }
-    if (NULL != private_key.buf && 32 != private_key.len) {
+    if (private_key.len && private_key.len != 32) {
         mp_raise_ValueError("private_key is invalid");
     }
-    if (NULL != public_key.buf && 33 != public_key.len) {
+    if (public_key.len && public_key.len != 33) {
         mp_raise_ValueError("public_key is invalid");
     }
 
     const curve_info *curve = NULL;
-    if (NULL == curve_name.buf) {
+    if (!curve_name.len) {
         curve = get_curve_by_name(SECP256K1_NAME);
     } else {
         curve = get_curve_by_name(curve_name.buf);
@@ -92,17 +92,17 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_make_new(const mp_obj_type_t *type, size
     o->fingerprint = (uint32_t)fingerprint;
     o->hdnode.depth = (uint32_t)depth;
     o->hdnode.child_num = (uint32_t)child_num;
-    if (NULL != chain_code.buf && 32 == chain_code.len) {
+    if (chain_code.len) {
         memcpy(o->hdnode.chain_code, chain_code.buf, 32);
     } else {
         memset(o->hdnode.chain_code, 0, 32);
     }
-    if (NULL != private_key.buf && 32 == private_key.len) {
+    if (private_key.len) {
         memcpy(o->hdnode.private_key, private_key.buf, 32);
     } else {
         memset(o->hdnode.private_key, 0, 32);
     }
-    if (NULL != public_key.buf && 33 == public_key.len) {
+    if (public_key.len) {
         memcpy(o->hdnode.public_key, public_key.buf, 33);
     } else {
         memset(o->hdnode.public_key, 0, 33);
