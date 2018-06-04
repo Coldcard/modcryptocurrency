@@ -255,11 +255,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_fingerprint_obj, mod_tr
 /// def my_fingerprint(self) -> int:
 ///     '''
 ///     Returns a fingerprint of this HD node (hash of its public key)... not the parent.
+///     NOTE: this is a little-endian 32-bit number, not BE32 used elsewhere in this library.
 ///     '''
 STATIC mp_obj_t mod_trezorcrypto_HDNode_my_fingerprint(mp_obj_t self) {
     mp_obj_HDNode_t *o = MP_OBJ_TO_PTR(self);
     uint32_t fp = hdnode_fingerprint(&o->hdnode);
-    return mp_obj_new_int_from_uint(fp);
+    return mp_obj_new_int_from_uint(__builtin_bswap32(fp));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_my_fingerprint_obj, mod_trezorcrypto_HDNode_my_fingerprint);
 
