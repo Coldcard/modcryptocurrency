@@ -13,7 +13,7 @@ Changes:
 
 # Credits
 
-This code originates from an Open Source Trezor project.
+This code originates from an [Open Source Trezor project](https://github.com/trezor/trezor-core/tree/master/embed/extmod/modtrezorcrypto).
 
 # Licence
 
