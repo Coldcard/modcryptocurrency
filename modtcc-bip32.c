@@ -17,6 +17,7 @@
 typedef struct _mp_obj_HDNode_t {
     mp_obj_base_t base;
     uint32_t fingerprint;
+    bool have_private;
     HDNode hdnode;
 } mp_obj_HDNode_t;
 
@@ -99,8 +100,10 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_make_new(const mp_obj_type_t *type, size
     }
     if (private_key.len) {
         memcpy(o->hdnode.private_key, private_key.buf, 32);
+        o->have_private = true;
     } else {
         memset(o->hdnode.private_key, 0, 32);
+        o->have_private = false;
     }
     if (public_key.len) {
         memcpy(o->hdnode.public_key, public_key.buf, 33);
@@ -120,11 +123,20 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_derive(mp_obj_t self, mp_obj_t index) {
     mp_obj_HDNode_t *o = MP_OBJ_TO_PTR(self);
     uint32_t i = mp_obj_get_int_truncated(index);
     uint32_t fp = hdnode_fingerprint(&o->hdnode);
+    int res;
 
-    if (!hdnode_private_ckd(&o->hdnode, i)) {
+    if(!o->have_private) {
+        // must do a public derivation when we have no private key
+        res = hdnode_public_ckd(&o->hdnode, i);
+    } else {
+        res = hdnode_private_ckd(&o->hdnode, i);
+    }
+
+    if (!res) {
         memset(&o->hdnode, 0, sizeof(o->hdnode));
         mp_raise_ValueError("Failed to derive");
     }
+
     o->fingerprint = fp;
 
     return mp_const_none;
@@ -290,7 +302,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_chain_code_obj, mod_tre
 ///     '''
 STATIC mp_obj_t mod_trezorcrypto_HDNode_private_key(mp_obj_t self) {
     mp_obj_HDNode_t *o = MP_OBJ_TO_PTR(self);
-    return mp_obj_new_bytes(o->hdnode.private_key, sizeof(o->hdnode.private_key));
+
+    if(!o->have_private) {
+        return mp_const_none;
+    } else {
+        return mp_obj_new_bytes(o->hdnode.private_key, sizeof(o->hdnode.private_key));
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_HDNode_private_key_obj, mod_trezorcrypto_HDNode_private_key);
 
