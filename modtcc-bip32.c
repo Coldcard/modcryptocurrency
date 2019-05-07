@@ -224,6 +224,7 @@ STATIC mp_obj_t mod_trezorcrypto_HDNode_clone(mp_obj_t self) {
     mp_obj_HDNode_t *copy = m_new_obj(mp_obj_HDNode_t);
     copy->base.type = &mod_trezorcrypto_HDNode_type;
     copy->hdnode = o->hdnode;
+    copy->have_private = o->have_private;
     copy->fingerprint = o->fingerprint;
     return MP_OBJ_FROM_PTR(copy);
 }
@@ -238,6 +239,7 @@ STATIC mp_obj_t modtcc_HDNode_blank(mp_obj_t self) {
 
     memset(&o->hdnode, 0, sizeof(HDNode));
     o->fingerprint = 0;
+    o->have_private = false;
 
     return mp_const_none;
 
@@ -416,6 +418,15 @@ STATIC mp_obj_t mod_trezorcrypto_bip32_deserialize(mp_obj_t value, mp_obj_t vers
     o->base.type = &mod_trezorcrypto_HDNode_type;
     o->hdnode = hdnode;
     o->fingerprint = fingerprint;
+
+    o->have_private = false;
+    for(int j=0; j<32; j++) {
+        if(hdnode.private_key[j] != 0) {
+            o->have_private = true;
+            break;
+        }
+    }
+
     return MP_OBJ_FROM_PTR(o);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_trezorcrypto_bip32_deserialize_obj, mod_trezorcrypto_bip32_deserialize);
@@ -442,6 +453,7 @@ STATIC mp_obj_t mod_trezorcrypto_bip32_from_seed(mp_obj_t seed, mp_obj_t curve_n
     mp_obj_HDNode_t *o = m_new_obj(mp_obj_HDNode_t);
     o->base.type = &mod_trezorcrypto_HDNode_type;
     o->hdnode = hdnode;
+    o->have_private = true;
     return MP_OBJ_FROM_PTR(o);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_trezorcrypto_bip32_from_seed_obj, mod_trezorcrypto_bip32_from_seed);
