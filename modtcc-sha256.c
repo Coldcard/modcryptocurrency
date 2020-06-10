@@ -36,6 +36,21 @@ STATIC mp_obj_t mod_trezorcrypto_Sha256_make_new(const mp_obj_type_t *type, size
     return MP_OBJ_FROM_PTR(o);
 }
 
+/// def copy(self) -> Sha256:
+///     '''
+///     Copy the hash context and make independant instance
+///     '''
+STATIC mp_obj_t mod_trezorcrypto_Sha256_copy(mp_obj_t self) {
+    mp_obj_Sha256_t *existing = MP_OBJ_TO_PTR(self);
+    mp_obj_Sha256_t *copy = m_new_obj(mp_obj_Sha256_t);
+
+    copy->base.type = existing->base.type;
+    copy->ctx = existing->ctx;
+
+    return MP_OBJ_FROM_PTR(copy);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_Sha256_copy_obj, mod_trezorcrypto_Sha256_copy);
+
 /// def update(self, data: bytes) -> None:
 ///     '''
 ///     Update the hash context with hashed data.
@@ -75,6 +90,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_trezorcrypto_Sha256___del___obj, mod_trezor
 
 STATIC const mp_rom_map_elem_t mod_trezorcrypto_Sha256_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&mod_trezorcrypto_Sha256_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&mod_trezorcrypto_Sha256_copy_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest), MP_ROM_PTR(&mod_trezorcrypto_Sha256_digest_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mod_trezorcrypto_Sha256___del___obj) },
     { MP_ROM_QSTR(MP_QSTR_block_size), MP_OBJ_NEW_SMALL_INT(SHA256_BLOCK_LENGTH) },
