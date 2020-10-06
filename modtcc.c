@@ -13,7 +13,9 @@
 
 // NOTE: These are not header files, but C files.
 
+#ifndef EXCLUDE_AES
 #include "modtcc-aes.c"
+#endif
 #include "modtcc-crc.c"
 #include "modtcc-bip32.c"
 #include "modtcc-bip39.c"
@@ -43,7 +45,9 @@
 
 STATIC const mp_rom_map_elem_t mp_module_tcc_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_trezorcrypto) },
+#ifndef EXCLUDE_AES
     { MP_ROM_QSTR(MP_QSTR_AES), MP_ROM_PTR(&mod_trezorcrypto_AES_type) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_crc), MP_ROM_PTR(&mod_trezorcrypto_crc_module) },
     { MP_ROM_QSTR(MP_QSTR_bip32), MP_ROM_PTR(&mod_trezorcrypto_bip32_module) },
     { MP_ROM_QSTR(MP_QSTR_bip39), MP_ROM_PTR(&mod_trezorcrypto_bip39_module) },
