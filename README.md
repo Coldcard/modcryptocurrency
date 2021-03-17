@@ -1,3 +1,13 @@
+
+# ☠️ DO NOT USE -- unmaintained ☠️
+
+This code is no longer in use and no security updates will be made.
+
+**Use at your own risk**. Not recommended for new projects, and existing Bitcoin projects
+should move towards `libsecp256k1`.
+
+---
+
 # Bitcoin and Crypto Algorithms for Micropython
 
 ## modcryptocurrency
